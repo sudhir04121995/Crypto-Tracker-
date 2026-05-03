@@ -12,7 +12,7 @@ import TradingSignals from './Components/TradingSignals';
 import AdvancedSignals from './Components/AdvancedSignals';
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('futures');
   const [cryptoData, setCryptoData] = useState<CryptoData[]>([]);
   const [signals, setSignals] = useState<Signal[]>([]);
   const [loading, setLoading] = useState(true);
