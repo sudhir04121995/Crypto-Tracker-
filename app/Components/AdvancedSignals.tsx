@@ -462,7 +462,7 @@ const fetchMarketData = async () => {
             <p className="text-3xl font-bold text-violet-500">{avgConfluence}%</p>
           </div>
         </div>
-<div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4 mb-6 p-4 bg-white rounded-xl shadow-sm border">
+<div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4 mb-6 p-2 bg-white rounded-xl shadow-sm border">
 
   {/* LEFT: Exchange Buttons */}
   <div className="flex flex-wrap items-center gap-2">

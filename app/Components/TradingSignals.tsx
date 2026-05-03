@@ -513,43 +513,43 @@ const topSignals = currentItems.map((coin, index) => {
           <div className=" bg-white rounded-lg p-4  border-transparent shadow-sm">
            <div className="flex items-center justify-between gap-2 mb-2">
     <FiTrendingUp className="text-green-500 text-xl" />
-    <p className="text-green-400 rounded-xl px-2 py-1 bg-green-100  text-sm">BULLISH</p>
+    <p className="text-green-400 rounded-xl px-2 py-1 bg-green-100  text-[10px] font-bold">BULLISH</p>
   </div>
 
             <p className="text-2xl font-bold text-green-500">{bullishCount}</p>
-            <p className="text-xs font-bold text-gray-500">BUY SIGNALS DETECTED</p>
+            <p className="text-[10px]  font-bold text-gray-500">BUY SIGNALS DETECTED</p>
           </div>
           
           <div className="bg-white rounded-lg p-4  border-transparent shadow-sm">
            <div className="flex items-center justify-between gap-2 mb-2">
             <FiTrendingDown className="text-red-500 text-xl" />
-            <p className="text-red-400 rounded-xl px-2 py-1 bg-red-100 text-sm">BEARISH</p>
+            <p className="text-red-400 rounded-xl px-2 py-1 bg-red-100 text-[10px] font-bold">BEARISH</p>
             </div>
             <p className="text-2xl font-bold text-red-500">{bearishCount}</p>
-            <p className="text-xs text-gray-500">SELL SIGNALS DETECTED</p>
+            <p className="text-[10px] font-bold text-gray-500">SELL SIGNALS DETECTED</p>
           </div>
           
           <div className="bg-white rounded-lg p-4  border-transparent shadow-sm">
              <div className="flex items-center justify-between gap-2 mb-2">
               <BsCalculator className='text-violet-500 text-xl' />
-            <p className="text-violet-400 rounded-xl px-2 py-1 bg-violet-100 text-sm">AVG SCORE</p>
+            <p className="text-violet-400 rounded-xl px-2 py-1 bg-violet-100 text-[10px] font-bold">AVG SCORE</p>
           </div>
             <p className="text-2xl font-bold text-violet-500">{avgScore}</p>
-            <p className="text-gray-500 text-xs">AVERAGE SIGNAL SCORE</p>
+            <p className="text-gray-500 text-[11px] font-bold">AVERAGE SIGNAL SCORE</p>
           </div>
           
           <div className="bg-white rounded-lg p-4  border-transparent shadow-sm">
            <div className="flex items-center justify-between gap-2 mb-2">
             <LuTrophy className="text-orange-400 text-xl" />
-            <p className="text-orange-500 text-sm font-bold rounded-xl bg-orange-100 px-2 py-1">TOP</p>
+            <p className="text-orange-500 text-[10px] font-bold rounded-xl bg-orange-100 px-2 py-1">TOP</p>
             </div>
             <p className="text-2xl font-bold text-orange-500">EUL</p>
-            <p className="text-black text-sm">+14.37% (24H)</p>
+            <p className="text-black text-[11px] font-bold">+14.37% (24H)</p>
           </div>
         </div>
 
     
-<div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 p-3 bg-white rounded-lg shadow-sm border">
+<div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 p-1 bg-white rounded-lg shadow-sm border">
 
   {/* LEFT: Timeframes */}
   <div className="w-full lg:w-auto">
