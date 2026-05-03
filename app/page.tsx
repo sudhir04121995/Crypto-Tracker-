@@ -10,6 +10,7 @@ import axios from 'axios';
 import { log } from 'console';
 import TradingSignals from './Components/TradingSignals';
 import AdvancedSignals from './Components/AdvancedSignals';
+import TradingChart from './Components/TradingChart';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState('futures');
@@ -153,7 +154,7 @@ export default function Home() {
 
             {/* Live Signals Tab */}
         {activeTab === 'signals' && <AdvancedSignals/>}
-
+{activeTab === 'strategy' && <TradingChart/>}
 
       {activeTab === 'backtester' && (
           <div>
