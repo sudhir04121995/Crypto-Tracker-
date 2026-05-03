@@ -1649,72 +1649,136 @@ export default function TradingChart() {
     { label: '1d', value: '1440' }
   ];
 
-  // Fetch OHLC data from Kraken
-  const fetchChartData = async (pair: string, interval: string): Promise<ChartData[]> => {
-    try {
-      const response = await axios.get('https://api.kraken.com/0/public/OHLC', {
-        params: {
-          pair: pair,
-          interval: interval,
-        },
-        timeout: 10000
-      });
+//   // Fetch OHLC data from Kraken
+//   const fetchChartData = async (pair: string, interval: string): Promise<ChartData[]> => {
+//     try {
+//       const response = await axios.get('https://api.kraken.com/0/public/OHLC', {
+//         params: {
+//           pair: pair,
+//           interval: interval,
+//         },
+//         timeout: 10000
+//       });
       
-      if (!response.data.result) {
-        throw new Error('No result from API');
-      }
+//       if (!response.data.result) {
+//         throw new Error('No result from API');
+//       }
       
-      const data = response.data.result[pair];
+//       const data = response.data.result[pair];
       
-      if (!data || data.length === 0) {
-        console.log(`No data for pair: ${pair}, using mock data`);
-        return generateMockData();
-      }
+//       if (!data || data.length === 0) {
+//         console.log(`No data for pair: ${pair}, using mock data`);
+//         return generateMockData();
+//       }
       
-      const formattedData: ChartData[] = data.map((item: any) => ({
-        time: item[0] as Time,
-        open: parseFloat(item[1]),
-        high: parseFloat(item[2]),
-        low: parseFloat(item[3]),
-        close: parseFloat(item[4]),
-      }));
+//       const formattedData: ChartData[] = data.map((item: any) => ({
+//         time: item[0] as Time,
+//         open: parseFloat(item[1]),
+//         high: parseFloat(item[2]),
+//         low: parseFloat(item[3]),
+//         close: parseFloat(item[4]),
+//       }));
       
-      return formattedData;
-    } catch (error) {
-      console.error('Error fetching from Kraken:', error);
+//       return formattedData;
+//     } catch (error) {
+//       console.error('Error fetching from Kraken:', error);
+//       return generateMockData();
+//     }
+//   };
+
+//   // Fetch ticker data from Kraken
+//   const fetchTickerData = async (pair: string) => {
+//     try {
+//       const response = await axios.get('https://api.kraken.com/0/public/Ticker', {
+//         params: { pair: pair },
+//         timeout: 10000
+//       });
+      
+//       const ticker = response.data.result[pair];
+      
+//       if (ticker) {
+//         const current = parseFloat(ticker.c[0]);
+//         const open = parseFloat(ticker.o);
+//         const change = ((current - open) / open) * 100;
+        
+//         setCurrentPrice(current);
+//         setPriceChange(change);
+//         setHigh24h(parseFloat(ticker.h[1]));
+//         setLow24h(parseFloat(ticker.l[1]));
+//         setVolume(parseFloat(ticker.v[1]));
+//       } else {
+//         // Set mock data if no ticker data
+//         setMockPriceData();
+//       }
+//     } catch (error) {
+//       console.error('Error fetching ticker:', error);
+//       setMockPriceData();
+//     }
+//   };
+
+
+// Update fetchChartData
+const fetchChartData = async (pair: string, interval: string): Promise<ChartData[]> => {
+  try {
+    const response = await axios.get('/api/kraken-chart', {
+      params: {
+        pair: pair,
+        interval: interval,
+      },
+      timeout: 10000
+    });
+    
+    // Don't throw error - just use mock data
+    const data = response.data.result?.[pair];
+    
+    if (!data || data.length === 0) {
+      console.log(`No data for pair: ${pair}, using mock data`);
       return generateMockData();
     }
-  };
+    
+    const formattedData: ChartData[] = data.map((item: any) => ({
+      time: item[0] as Time,
+      open: parseFloat(item[1]),
+      high: parseFloat(item[2]),
+      low: parseFloat(item[3]),
+      close: parseFloat(item[4]),
+    }));
+    
+    return formattedData.length > 0 ? formattedData : generateMockData();
+  } catch (error) {
+    console.error('Error fetching chart data:', error);
+    return generateMockData();
+  }
+};
 
-  // Fetch ticker data from Kraken
-  const fetchTickerData = async (pair: string) => {
-    try {
-      const response = await axios.get('https://api.kraken.com/0/public/Ticker', {
-        params: { pair: pair },
-        timeout: 10000
-      });
+// Update fetchTickerData
+const fetchTickerData = async (pair: string) => {
+  try {
+    const response = await axios.get('/api/kraken-ticker', {
+      params: { pair: pair },
+      timeout: 10000
+    });
+    
+    const ticker = response.data.result?.[pair];
+    
+    if (ticker && ticker.c) {
+      const current = parseFloat(ticker.c[0]);
+      const open = parseFloat(ticker.o);
+      const change = ((current - open) / open) * 100;
       
-      const ticker = response.data.result[pair];
-      
-      if (ticker) {
-        const current = parseFloat(ticker.c[0]);
-        const open = parseFloat(ticker.o);
-        const change = ((current - open) / open) * 100;
-        
-        setCurrentPrice(current);
-        setPriceChange(change);
-        setHigh24h(parseFloat(ticker.h[1]));
-        setLow24h(parseFloat(ticker.l[1]));
-        setVolume(parseFloat(ticker.v[1]));
-      } else {
-        // Set mock data if no ticker data
-        setMockPriceData();
-      }
-    } catch (error) {
-      console.error('Error fetching ticker:', error);
+      setCurrentPrice(current);
+      setPriceChange(change);
+      setHigh24h(parseFloat(ticker.h[1]) || current * 1.02);
+      setLow24h(parseFloat(ticker.l[1]) || current * 0.98);
+      setVolume(parseFloat(ticker.v[1]) || 10000);
+    } else {
       setMockPriceData();
     }
-  };
+  } catch (error) {
+    console.error('Error fetching ticker:', error);
+    setMockPriceData();
+  }
+};
 
   const setMockPriceData = () => {
     setCurrentPrice(50000);
