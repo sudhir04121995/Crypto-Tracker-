@@ -123,34 +123,42 @@ const handleTimeframeChange = async (timeframe: string) => {
     fetchMarketData();
   }, []);
 
-  // Replace your entire fetchMarketData function with this:
 const fetchMarketData = async () => {
   try {
-    // Binance API - Real-time data
     const response = await axios.get('https://api.binance.com/api/v3/ticker/24hr');
     const data = response.data;
     
-    // Filter for USDT pairs
     const usdtPairs = data
       .filter((item: any) => item.symbol.endsWith('USDT'))
       .slice(0, 50);
     
-    // Transform Binance data
-    const transformedData = usdtPairs.map((item: any, index: number) => ({
-      id: item.symbol.toLowerCase().replace('usdt', ''),
-      symbol: item.symbol.replace('USDT', '').toLowerCase(),
-      name: item.symbol.replace('USDT', ''),
-      image: `https://cryptologos.cc/logos/${item.symbol.replace('USDT', '').toLowerCase()}-logo.png`,
-      current_price: parseFloat(item.lastPrice),
-      price_change_percentage_24h: parseFloat(item.priceChangePercent),
-      price_change_percentage_1h_in_currency: parseFloat(item.priceChangePercent) / 24,
-      price_change_percentage_7d_in_currency: parseFloat(item.priceChangePercent) * 7,
-      market_cap: parseFloat(item.quoteVolume) * parseFloat(item.lastPrice),
-      total_volume: parseFloat(item.volume),
-      market_cap_rank: index + 1,
-      high_24h: parseFloat(item.highPrice),
-      low_24h: parseFloat(item.lowPrice),
-    }));
+    const transformedData = usdtPairs.map((item: any, index: number) => {
+      const symbol = item.symbol.replace('USDT', '').toLowerCase();
+      
+      // Try multiple image sources
+      const imageUrls = [
+        `https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/${symbol}.png`,
+        `https://cryptologos.cc/logos/${symbol}-logo.png`,
+        `https://assets.coingecko.com/coins/images/1/small/${symbol}.png`,
+      ];
+      
+      return {
+        id: symbol,
+        symbol: symbol,
+        name: item.symbol.replace('USDT', ''),
+        image: imageUrls[0], // Use first URL as primary
+        fallbackImages: imageUrls.slice(1), // Store fallbacks
+        current_price: parseFloat(item.lastPrice),
+        price_change_percentage_24h: parseFloat(item.priceChangePercent),
+        price_change_percentage_1h_in_currency: parseFloat(item.priceChangePercent) / 24,
+        price_change_percentage_7d_in_currency: parseFloat(item.priceChangePercent) * 7,
+        market_cap: parseFloat(item.quoteVolume) * parseFloat(item.lastPrice),
+        total_volume: parseFloat(item.volume),
+        market_cap_rank: index + 1,
+        high_24h: parseFloat(item.highPrice),
+        low_24h: parseFloat(item.lowPrice),
+      };
+    });
     
     setCoins(transformedData);
     setFilteredCoins(transformedData);
@@ -164,6 +172,34 @@ const fetchMarketData = async () => {
     setRefreshing(false);
   }
 };
+
+
+// Create a new component for handling images with fallbacks
+const CryptoImage = ({ coin, className }: { coin: any; className?: string }) => {
+  const [imgSrc, setImgSrc] = useState(coin.image);
+  const [fallbackIndex, setFallbackIndex] = useState(0);
+  
+  const handleError = () => {
+    if (coin.fallbackImages && fallbackIndex < coin.fallbackImages.length) {
+      setImgSrc(coin.fallbackImages[fallbackIndex]);
+      setFallbackIndex(fallbackIndex + 1);
+    } else {
+      // Ultimate fallback - use a default cryptocurrency icon
+      setImgSrc('https://cryptologos.cc/logos/default-logo.png');
+    }
+  };
+  
+  return (
+    <img 
+      src={imgSrc} 
+      alt={coin.name} 
+      className={className}
+      onError={handleError}
+    />
+  );
+};
+
+
   // const fetchMarketData = async () => {
   //   try {
   //     const response = await axios.get(
@@ -602,7 +638,8 @@ const topSignals = currentItems.map((coin, index) => {
                     <div className="flex items-center">
                       <div className='flex'>
                           <div>
-                            <img src={signal.image} alt={signal.name} className="w-10 h-10 mr-2" /> 
+                            {/* <img src={signal.image} alt={signal.name} className="w-10 h-10 mr-2" />  */}
+                            <CryptoImage coin={signal} className="w-10 h-10 mr-2" />
                           </div>
                      <div className="text-black font-bold">
   {signal.symbol}
@@ -776,317 +813,3 @@ const topSignals = currentItems.map((coin, index) => {
   );
 }
 
-
-
-// 'use client';
-
-// import { useState, useEffect } from 'react';
-// import axios from 'axios';
-// import { FiSearch, FiActivity } from 'react-icons/fi';
-
-// interface CoinData {
-//   id: string;
-//   symbol: string;
-//   name: string;
-//   image: string;
-//   current_price: number;
-//   price_change_percentage_24h: number;
-//   price_change_percentage_1h_in_currency?: number;
-//   price_change_percentage_7d_in_currency?: number;
-//   market_cap: number;
-//   total_volume: number;
-//   market_cap_rank: number;
-// }
-
-// export default function TradingSignals() {
-//   const [coins, setCoins] = useState<CoinData[]>([]);
-//   const [filteredCoins, setFilteredCoins] = useState<CoinData[]>([]);
-//   const [loading, setLoading] = useState(true);
-//   const [searchTerm, setSearchTerm] = useState('');
-//   const [selectedTimeframe, setSelectedTimeframe] = useState('1H');
-
-//   useEffect(() => {
-//     fetchMarketData();
-//   }, []);
-
-//   const fetchMarketData = async () => {
-//     try {
-//       const response = await axios.get(
-//         'https://api.coingecko.com/api/v3/coins/markets',
-//         {
-//           params: {
-//             vs_currency: 'usd',
-//             order: 'volume_desc',
-//             per_page: 50,
-//             page: 1,
-//             sparkline: false,
-//             price_change_percentage: '1h,24h,7d,30d'
-//           }
-//         }
-//       );
-      
-//       const data = response.data;
-//       setCoins(data);
-//       setFilteredCoins(data);
-//       setLoading(false);
-//     } catch (error) {
-//       console.error('Error fetching data:', error);
-//       setLoading(false);
-//     }
-//   };
-
-//   // Format market cap
-//   const formatMarketCap = (cap: number): string => {
-//     if (cap >= 1e9) return `$${(cap / 1e9).toFixed(2)}B`;
-//     if (cap >= 1e6) return `$${(cap / 1e6).toFixed(2)}M`;
-//     return `$${cap.toLocaleString()}`;
-//   };
-
-//   // Format volume
-//   const formatVolume = (vol: number): string => {
-//     if (vol >= 1e9) return `$${(vol / 1e9).toFixed(2)}B`;
-//     if (vol >= 1e6) return `$${(vol / 1e6).toFixed(0)}M`;
-//     return `$${vol.toLocaleString()}`;
-//   };
-
-//   // Filter coins based on search
-//   useEffect(() => {
-//     if (searchTerm === '') {
-//       setFilteredCoins(coins);
-//     } else {
-//       const filtered = coins.filter(coin =>
-//         coin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//         coin.symbol.toLowerCase().includes(searchTerm.toLowerCase())
-//       );
-//       setFilteredCoins(filtered);
-//     }
-//   }, [searchTerm, coins]);
-
-//   // Calculate stats
-//   const bullishCount = filteredCoins.filter(coin => coin.price_change_percentage_24h > 0).length;
-//   const bearishCount = filteredCoins.filter(coin => coin.price_change_percentage_24h < 0).length;
-  
-//   const scores = filteredCoins.map(coin => {
-//     const change = Math.abs(coin.price_change_percentage_24h);
-//     return Math.min(100, Math.round(50 + change * 3));
-//   });
-//   const avgScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
-
-//   // Get top signals
-//   const topSignals = filteredCoins.slice(0, 10).map((coin, index) => ({
-//     id: coin.id,
-//     rank: index + 1,
-//     name: coin.name,
-//     symbol: coin.symbol.toUpperCase(),
-//     signal: coin.price_change_percentage_24h > 0 ? 'BUY' : 'SELL',
-//     score: Math.min(100, Math.round(50 + Math.abs(coin.price_change_percentage_24h) * 3)),
-//     price: coin.current_price,
-//     change1h: coin.price_change_percentage_1h_in_currency || 0,
-//     change24h: coin.price_change_percentage_24h,
-//     volume: formatVolume(coin.total_volume),
-//     marketCap: formatMarketCap(coin.market_cap),
-//     volatility: Math.abs(Math.round(coin.price_change_percentage_24h * 2)),
-//     timestamp: new Date().toLocaleString('en-US', { 
-//       month: 'short', 
-//       day: 'numeric', 
-//       hour: '2-digit', 
-//       minute: '2-digit' 
-//     })
-//   }));
-
-//   if (loading) {
-//     return (
-//       <div className="flex items-center justify-center h-64 bg-[#0a0e1a]">
-//         <div className="text-center">
-//           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto"></div>
-//           <p className="mt-4 text-gray-400">Loading market data...</p>
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="bg-[#ececed]  text-gray-200">
-//       {/* Main Content - Matching Screenshot Design */}
-//       <div className="max-w-9xl mx-auto px-4 py-6">
-        
-//         {/* BINANCE SPOT Header */}
-//         <div className='flex justify-between'>
-//           <div className="mb-6">
-//           <h1 className="text-2xl font-bold text-white">BINANCE SPOT</h1>
-//           <p className="text-green-500 text-sm">EMA CROSSOVER</p>
-//         </div>
-//         <div>
-//  <h1 className="text-2xl font-bold text-white">BINANCE SPOT</h1>
-//           <p className="text-green-500 text-sm">EMA CROSSOVER</p>
-//         </div>
-//         </div>
-
-//         {/* Stats Cards - Exactly as screenshot */}
-//         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-//           {/* Card 1: BULLISH / BUY SIGNALS */}
-//           <div className="bg-[#131824] rounded-lg p-4 text-center">
-//             <p className="text-gray-400 text-sm">BULLISH</p>
-//             <p className="text-3xl font-bold text-green-500">{bullishCount}</p>
-//             <p className="text-xs text-gray-500">BUY SIGNALS DETECTED</p>
-//           </div>
-          
-//           {/* Card 2: BEARISH / SELL SIGNALS */}
-//           <div className="bg-[#131824] rounded-lg p-4 text-center">
-//             <p className="text-gray-400 text-sm">BEARISH</p>
-//             <p className="text-3xl font-bold text-red-500">{bearishCount}</p>
-//             <p className="text-xs text-gray-500">SELL SIGNALS DETECTED</p>
-//           </div>
-          
-//           {/* Card 3: AVERAGE SIGNAL SCORE */}
-//           <div className="bg-[#131824] rounded-lg p-4 text-center">
-//             <p className="text-gray-400 text-sm">AVERAGE SIGNAL SCORE</p>
-//             <p className="text-3xl font-bold text-yellow-500">{avgScore}</p>
-//           </div>
-          
-//           {/* Card 4: TOP */}
-//           <div className="bg-[#131824] rounded-lg p-4 text-center">
-//             <p className="text-gray-400 text-sm">TOP</p>
-//             <p className="text-xl font-bold text-white">EUL</p>
-//             <p className="text-green-500 text-sm">+14.37% (24H)</p>
-//           </div>
-
-//           {/* Card 5: Extra stats */}
-//           <div className="bg-[#131824] rounded-lg p-4 text-center">
-//             <p className="text-gray-400 text-sm">TOTAL</p>
-//             <p className="text-3xl font-bold text-white">{filteredCoins.length}</p>
-//             <p className="text-xs text-gray-500">SIGNALS</p>
-//           </div>
-//         </div>
-
-//         {/* Timeframe Selector - 15M, 1H, 4H, 1D */}
-//         <div className="flex gap-2 mb-6 overflow-x-auto pb-2 border-b border-gray-800">
-//           {['15M', '1H', '4H', '1D'].map(tf => (
-//             <button
-//               key={tf}
-//               onClick={() => setSelectedTimeframe(tf)}
-//               className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${
-//                 selectedTimeframe === tf 
-//                   ? 'bg-green-500 text-black' 
-//                   : 'text-gray-400 hover:text-white'
-//               }`}
-//             >
-//               {tf}
-//             </button>
-//           ))}
-//         </div>
-
-//         {/* Search Bar */}
-//         <div className="relative mb-6">
-//           <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-//           <input
-//             type="text"
-//             placeholder="Search by symbol or name..."
-//             value={searchTerm}
-//             onChange={(e) => setSearchTerm(e.target.value)}
-//             className="w-full bg-[#131824] border border-gray-700 rounded-lg pl-10 pr-4 py-3 text-gray-200 placeholder-gray-500 focus:outline-none focus:border-green-500"
-//           />
-//         </div>
-
-//         {/* Signals Table - Exactly matching screenshot columns */}
-//         <div className="bg-[#131824] rounded-lg overflow-x-auto">
-//           <div className="px-4 py-3 border-b border-gray-700">
-//             <p className="text-gray-400">{filteredCoins.length} Signals</p>
-//           </div>
-          
-//           <table className="w-full min-w-[800px]">
-//             <thead className="bg-[#0d1117] border-b border-gray-700">
-//               <tr className="text-left text-gray-400 text-xs">
-//                 <th className="px-4 py-3">#</th>
-//                 <th className="px-4 py-3">COIN</th>
-//                 <th className="px-4 py-3">SIGNAL & TIMING</th>
-//                 <th className="px-4 py-3">SCORE</th>
-//                 <th className="px-4 py-3">PRICE</th>
-//                 <th className="px-4 py-3">1H</th>
-//                 <th className="px-4 py-3">24H</th>
-//                 <th className="px-4 py-3">VOLUME</th>
-//                 <th className="px-4 py-3">MARKET CAP</th>
-//                 <th className="px-4 py-3">VOLATILITY</th>
-//               </tr>
-//             </thead>
-//             <tbody>
-//               {topSignals.map((signal) => (
-//                 <tr key={signal.id} className="border-b border-gray-700 hover:bg-[#1a2029] transition-colors">
-//                   {/* # Column */}
-//                   <td className="px-4 py-3 text-gray-400 text-sm">
-//                     {signal.rank}
-//                   </td>
-                  
-//                   {/* COIN Column */}
-//                   <td className="px-4 py-3">
-//                     <div>
-//                       <p className="font-medium text-white text-sm">
-//                         {signal.symbol} #{signal.rank}
-//                       </p>
-//                       <p className="text-xs text-gray-500">{signal.name}</p>
-//                     </div>
-//                   </td>
-                  
-//                   {/* SIGNAL & TIMING Column */}
-//                   <td className="px-4 py-3">
-//                     <div>
-//                       <span className={`px-2 py-1 rounded text-xs font-bold ${
-//                         signal.signal === 'BUY' 
-//                           ? 'bg-green-900 text-green-500' 
-//                           : 'bg-red-900 text-red-500'
-//                       }`}>
-//                         {signal.signal}
-//                       </span>
-//                       <p className="text-xs text-gray-500 mt-1">{signal.timestamp}</p>
-//                     </div>
-//                   </td>
-                  
-//                   {/* SCORE Column */}
-//                   <td className="px-4 py-3">
-//                     <span className="text-white font-bold text-sm">
-//                       {signal.score}
-//                     </span>
-//                   </td>
-                  
-//                   {/* PRICE Column */}
-//                   <td className="px-4 py-3 font-mono text-sm text-white">
-//                     ${signal.price.toLocaleString()}
-//                   </td>
-                  
-//                   {/* 1H Column */}
-//                   <td className={`px-4 py-3 text-sm ${signal.change1h >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-//                     {signal.change1h >= 0 ? '▲' : '▼'} {Math.abs(signal.change1h).toFixed(2)}%
-//                   </td>
-                  
-//                   {/* 24H Column */}
-//                   <td className={`px-4 py-3 text-sm ${signal.change24h >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-//                     {signal.change24h >= 0 ? '▲' : '▼'} {Math.abs(signal.change24h).toFixed(2)}%
-//                   </td>
-                  
-//                   {/* VOLUME Column */}
-//                   <td className="px-4 py-3 text-gray-300 text-sm">
-//                     {signal.volume}
-//                   </td>
-                  
-//                   {/* MARKET CAP Column */}
-//                   <td className="px-4 py-3 text-gray-300 text-sm">
-//                     {signal.marketCap}
-//                   </td>
-                  
-//                   {/* VOLATILITY Column */}
-//                   <td className="px-4 py-3">
-//                     <span className="text-white text-sm">
-//                       {signal.volatility}
-//                     </span>
-//                   </td>
-//                 </tr>
-//               ))}
-//             </tbody>
-//           </table>
-//         </div>
-
-      
-//       </div>
-//     </div>
-//   );
-// }
