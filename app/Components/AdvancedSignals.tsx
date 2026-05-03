@@ -213,31 +213,78 @@ export default function AdvancedSignals() {
     };
   }, [isLive]);
 
-  // Replace your entire fetchMarketData function with this:
+//   // Replace your entire fetchMarketData function with this:
+// const fetchMarketData = async () => {
+//   try {
+//     // Binance API - No CORS issues, real-time data
+//     const response = await axios.get('https://api.binance.com/api/v3/ticker/24hr');
+//     const data = response.data;
+    
+//     // Filter for USDT pairs and take top 50
+//     const usdtPairs = data
+//       .filter((item: any) => item.symbol.endsWith('USDT'))
+//       .slice(0, 50);
+    
+//     // Transform Binance data to match your CoinData interface
+//     const transformedData: CoinData[] = usdtPairs.map((item: any) => ({
+//       id: item.symbol.toLowerCase().replace('usdt', ''),
+//       symbol: item.symbol.replace('USDT', '').toLowerCase(),
+//       name: item.symbol.replace('USDT', ''),
+//       image: `https://cryptologos.cc/logos/${item.symbol.replace('USDT', '').toLowerCase()}-${item.symbol.replace('USDT', '').toLowerCase()}-logo.png`,
+//       current_price: parseFloat(item.lastPrice),
+//       price_change_percentage_24h: parseFloat(item.priceChangePercent),
+//       price_change_percentage_1h_in_currency: parseFloat(item.priceChangePercent) / 24,
+//       market_cap: parseFloat(item.quoteVolume) * parseFloat(item.lastPrice),
+//       total_volume: parseFloat(item.volume),
+//       high_24h: parseFloat(item.highPrice),
+//       low_24h: parseFloat(item.lowPrice),
+//     }));
+    
+//     setCoins(transformedData);
+//     setFilteredCoins(transformedData);
+//     setLastUpdated(new Date());
+//     setLoading(false);
+//     setRefreshing(false);
+//   } catch (error) {
+//     console.error('Error fetching from Binance:', error);
+//     setLoading(false);
+//     setRefreshing(false);
+//   }
+// };
+
+
+
 const fetchMarketData = async () => {
   try {
-    // Binance API - No CORS issues, real-time data
-    const response = await axios.get('https://api.binance.com/api/v3/ticker/24hr');
+    // Use CoinGecko API - no CORS issues
+    const response = await axios.get(
+      'https://api.coingecko.com/api/v3/coins/markets',
+      {
+        params: {
+          vs_currency: 'usd',
+          order: 'market_cap_desc',
+          per_page: 50,
+          page: 1,
+          sparkline: false,
+          price_change_percentage: '1h,24h'
+        }
+      }
+    );
+    
     const data = response.data;
     
-    // Filter for USDT pairs and take top 50
-    const usdtPairs = data
-      .filter((item: any) => item.symbol.endsWith('USDT'))
-      .slice(0, 50);
-    
-    // Transform Binance data to match your CoinData interface
-    const transformedData: CoinData[] = usdtPairs.map((item: any) => ({
-      id: item.symbol.toLowerCase().replace('usdt', ''),
-      symbol: item.symbol.replace('USDT', '').toLowerCase(),
-      name: item.symbol.replace('USDT', ''),
-      image: `https://cryptologos.cc/logos/${item.symbol.replace('USDT', '').toLowerCase()}-${item.symbol.replace('USDT', '').toLowerCase()}-logo.png`,
-      current_price: parseFloat(item.lastPrice),
-      price_change_percentage_24h: parseFloat(item.priceChangePercent),
-      price_change_percentage_1h_in_currency: parseFloat(item.priceChangePercent) / 24,
-      market_cap: parseFloat(item.quoteVolume) * parseFloat(item.lastPrice),
-      total_volume: parseFloat(item.volume),
-      high_24h: parseFloat(item.highPrice),
-      low_24h: parseFloat(item.lowPrice),
+    const transformedData: CoinData[] = data.map((item: any) => ({
+      id: item.id,
+      symbol: item.symbol,
+      name: item.name,
+      image: item.image,
+      current_price: item.current_price,
+      price_change_percentage_24h: item.price_change_percentage_24h,
+      price_change_percentage_1h_in_currency: item.price_change_percentage_1h_in_currency || 0,
+      market_cap: item.market_cap,
+      total_volume: item.total_volume,
+      high_24h: item.high_24h || item.current_price * 1.02,
+      low_24h: item.low_24h || item.current_price * 0.98,
     }));
     
     setCoins(transformedData);
@@ -246,12 +293,116 @@ const fetchMarketData = async () => {
     setLoading(false);
     setRefreshing(false);
   } catch (error) {
-    console.error('Error fetching from Binance:', error);
+    console.error('Error fetching from CoinGecko:', error);
     setLoading(false);
     setRefreshing(false);
+    // Load mock data if API fails
+    loadMockData();
   }
 };
 
+// Add this function RIGHT AFTER fetchMarketData
+const loadMockData = () => {
+  const mockData: CoinData[] = [
+    {
+      id: 'bitcoin',
+      symbol: 'btc',
+      name: 'Bitcoin',
+      image: 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png',
+      current_price: 63452,
+      price_change_percentage_24h: 2.5,
+      price_change_percentage_1h_in_currency: 0.5,
+      market_cap: 1250000000000,
+      total_volume: 28000000000,
+      high_24h: 64500,
+      low_24h: 62800,
+    },
+    {
+      id: 'ethereum',
+      symbol: 'eth',
+      name: 'Ethereum',
+      image: 'https://assets.coingecko.com/coins/images/279/large/ethereum.png',
+      current_price: 3450,
+      price_change_percentage_24h: 1.8,
+      price_change_percentage_1h_in_currency: 0.3,
+      market_cap: 415000000000,
+      total_volume: 15000000000,
+      high_24h: 3500,
+      low_24h: 3400,
+    },
+    {
+      id: 'binancecoin',
+      symbol: 'bnb',
+      name: 'BNB',
+      image: 'https://assets.coingecko.com/coins/images/825/large/bnb-icon2.png',
+      current_price: 580,
+      price_change_percentage_24h: -0.5,
+      price_change_percentage_1h_in_currency: -0.1,
+      market_cap: 89000000000,
+      total_volume: 2000000000,
+      high_24h: 590,
+      low_24h: 575,
+    },
+    {
+      id: 'solana',
+      symbol: 'sol',
+      name: 'Solana',
+      image: 'https://assets.coingecko.com/coins/images/4128/large/solana.png',
+      current_price: 145,
+      price_change_percentage_24h: 5.2,
+      price_change_percentage_1h_in_currency: 1.2,
+      market_cap: 64000000000,
+      total_volume: 3500000000,
+      high_24h: 148,
+      low_24h: 138,
+    },
+    {
+      id: 'ripple',
+      symbol: 'xrp',
+      name: 'XRP',
+      image: 'https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png',
+      current_price: 0.62,
+      price_change_percentage_24h: -1.2,
+      price_change_percentage_1h_in_currency: -0.3,
+      market_cap: 34000000000,
+      total_volume: 1500000000,
+      high_24h: 0.64,
+      low_24h: 0.61,
+    },
+    {
+      id: 'cardano',
+      symbol: 'ada',
+      name: 'Cardano',
+      image: 'https://assets.coingecko.com/coins/images/975/large/cardano.png',
+      current_price: 0.45,
+      price_change_percentage_24h: 3.1,
+      price_change_percentage_1h_in_currency: 0.8,
+      market_cap: 15800000000,
+      total_volume: 450000000,
+      high_24h: 0.46,
+      low_24h: 0.44,
+    },
+    {
+      id: 'dogecoin',
+      symbol: 'doge',
+      name: 'Dogecoin',
+      image: 'https://assets.coingecko.com/coins/images/5/large/dogecoin.png',
+      current_price: 0.12,
+      price_change_percentage_24h: -2.3,
+      price_change_percentage_1h_in_currency: -0.5,
+      market_cap: 17200000000,
+      total_volume: 800000000,
+      high_24h: 0.125,
+      low_24h: 0.118,
+    },
+  ];
+  
+  setCoins(mockData);
+  setFilteredCoins(mockData);
+  setLastUpdated(new Date());
+  setLoading(false);
+  setRefreshing(false);
+};
 
   const handleManualRefresh = async () => {
     setRefreshing(true);
@@ -422,7 +573,8 @@ const fetchMarketData = async () => {
           
           {/* Live Indicator & Refresh */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-2 bg-[#4d4e4f] rounded-lg">
+            {/* <div className="flex items-center gap-2 px-3 py-2 bg-[#4d4e4f] rounded-lg"> */}
+            <div className="flex items-center gap-2 px-3 py-2 bg-[#131824] rounded-lg">
               <div className="relative">
                 <div className={`w-2.5 h-2.5 rounded-full ${isLive ? 'bg-green-500' : 'bg-gray-400'}`}></div>
                 {isLive && (
