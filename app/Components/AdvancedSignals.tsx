@@ -37,6 +37,114 @@ interface AdvancedSignal {
   riskReward: string;
 }
 
+
+// Add this before your component
+const generateChartDataForSignal = (signal: AdvancedSignal): number[] => {
+  const data = [];
+  let price = 100;
+  const trend = signal.signal === 'BUY' ? 1 : -1;
+  
+  for (let i = 0; i < 20; i++) {
+    // Add some randomness but with trend direction
+    const change = (Math.random() - 0.5 + trend * 0.3) * 3;
+    price = Math.max(80, Math.min(120, price + change));
+    data.push(price);
+  }
+  
+  return data;
+};
+
+
+
+  // Add this component inside your AdvancedSignals file
+const SparklineChart = ({ 
+  data, 
+  color, 
+  height = 32, 
+  width = 100 
+}: { 
+  data: number[]; 
+  color: string; 
+  height?: number; 
+  width?: number;
+}) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (!canvasRef.current || !data.length) return;
+    
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Set canvas dimensions
+    canvas.width = width;
+    canvas.height = height;
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height);
+    
+    // Find min and max for scaling
+    const min = Math.min(...data);
+    const max = Math.max(...data);
+    const range = max - min;
+    
+    // Calculate step
+    const step = width / (data.length - 1);
+    
+    // Draw the line
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    
+    // Draw area fill gradient
+    ctx.beginPath();
+    
+    data.forEach((value, index) => {
+      const x = index * step;
+      const y = height - ((value - min) / range) * height;
+      
+      if (index === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    });
+    
+    // Stroke the line
+    ctx.stroke();
+    
+    // Add gradient fill
+    ctx.lineTo(width, height);
+    ctx.lineTo(0, height);
+    ctx.closePath();
+    
+    const gradient = ctx.createLinearGradient(0, 0, 0, height);
+    gradient.addColorStop(0, `${color}60`);
+    gradient.addColorStop(1, `${color}00`);
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    
+    // Add start and end dots
+    const firstY = height - ((data[0] - min) / range) * height;
+    const lastY = height - ((data[data.length - 1] - min) / range) * height;
+    
+    ctx.beginPath();
+    ctx.fillStyle = color;
+    ctx.arc(0, firstY, 2, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    ctx.beginPath();
+    ctx.arc(width, lastY, 2, 0, 2 * Math.PI);
+    ctx.fill();
+    
+  }, [data, color, height, width]);
+
+  return <canvas ref={canvasRef} className="rounded" style={{ width, height }} />;
+};
+
 export default function AdvancedSignals() {
   const [coins, setCoins] = useState<CoinData[]>([]);
   const [filteredCoins, setFilteredCoins] = useState<CoinData[]>([]);
@@ -143,32 +251,7 @@ const fetchMarketData = async () => {
     setRefreshing(false);
   }
 };
-//   const fetchMarketData = async () => {
-//     try {
-//       const response = await axios.get(
-//         'https://api.coingecko.com/api/v3/coins/markets',
-//         {
-//           params: {
-//             vs_currency: 'usd',
-//             order: 'market_cap_desc',
-//             per_page: 50,
-//             page: 1,
-//             sparkline: false,
-//             price_change_percentage: '1h,24h'
-//           }
-//         }
-//       );
-//       setCoins(response.data);
-//       setFilteredCoins(response.data);
-//       setLastUpdated(new Date());
-//       setLoading(false);
-//       setRefreshing(false);
-//     } catch (error) {
-//       console.error('Error fetching data:', error);
-//       setLoading(false);
-//       setRefreshing(false);
-//     }
-//   };
+
 
   const handleManualRefresh = async () => {
     setRefreshing(true);
@@ -309,6 +392,8 @@ const fetchMarketData = async () => {
     );
   }
 
+
+
   return (
     <div className="bg-[#fdfdfe] min-h-screen text-gray-200">
       <div className="max-w-9xl mx-auto px-4 py-6">
@@ -337,7 +422,7 @@ const fetchMarketData = async () => {
           
           {/* Live Indicator & Refresh */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-2 bg-[#131824] rounded-lg">
+            <div className="flex items-center gap-2 px-3 py-2 bg-[#4d4e4f] rounded-lg">
               <div className="relative">
                 <div className={`w-2.5 h-2.5 rounded-full ${isLive ? 'bg-green-500' : 'bg-gray-400'}`}></div>
                 {isLive && (
@@ -451,7 +536,7 @@ const fetchMarketData = async () => {
           
             <tbody>
   {currentSignals.map((signal) => (
-    <tr key={signal.id} className="  hover:bg-[#1a2029] transition-colors">
+    <tr key={signal.id} className="  hover:bg-gray-400 transition-colors">
       <td className="px-4 py-3 text-xs font-bold text-gray-400">{signal.time}</td>
       
       {/* ASSET Column with Image */}
@@ -473,12 +558,50 @@ const fetchMarketData = async () => {
         </div>
       </td>
       
-      <td className="px-4 py-3">
+      {/* <td className="px-4 py-3">
         <button className="px-3 py-1 rounded bg-gray-800 text-xs hover:bg-green-500 hover:text-black transition-colors">
           CHART
         </button>
       </td>
-      
+       */}
+
+       <td className="px-4 py-3">
+  <div className="flex flex-col items-start gap-2">
+    {/* Chart Button */}
+    <button 
+      onClick={() => {
+        window.open(`https://www.tradingview.com/chart/?symbol=BINANCE:${signal.asset}USDT`, '_blank');
+      }}
+      className={`px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 text-xs font-medium border border-transparent
+               ${signal.signal ==='BUY'? `hover:border-green-500 hover:bg-green-100`:`hover:border-red-500 hover:bg-red-100`}   hover:text-white transition-all duration-200 
+                 flex items-center gap-1.5 shadow-sm`}
+    >
+      {/* <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      </svg>
+      CHART */}
+       <div className="w-full cursor-pointer">
+      <SparklineChart 
+        data={generateChartDataForSignal(signal)}
+        color={signal.signal === 'BUY' ? '#22c55e' : '#ef4444'}
+        height={32}
+        width={120}
+      />
+    </div>
+    </button>
+    
+    {/* Sparkline Chart - This will be visible */}
+    {/* <div className="w-full">
+      <SparklineChart 
+        data={generateChartDataForSignal(signal)}
+        color={signal.signal === 'BUY' ? '#22c55e' : '#ef4444'}
+        height={32}
+        width={120}
+      />
+    </div> */}
+  </div>
+</td>
       <td className="px-4 py-3">
         <div className="flex flex-col gap-0.5">
           {/* <span className={`px-2 py-0.5 rounded text-xs font-bold w-fit ${

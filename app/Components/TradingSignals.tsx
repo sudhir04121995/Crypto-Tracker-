@@ -632,7 +632,7 @@ const topSignals = currentItems.map((coin, index) => {
 </thead>
             <tbody>
               {topSignals.map((signal) => (
-                <tr key={signal.id} className="border-b border-gray-800 hover:bg-[#626364] transition-colors">
+                <tr key={signal.id} className="border-b border-gray-800 hover:bg-gray-400 transition-colors">
                   <td className="px-4 py-3 text-black text-[13px]">{signal.rank}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center">
