@@ -42,15 +42,14 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
               <p className="font-bold text-black text-lg">Coinpree</p>
               <p className="text-violet-500 text-xs font-semibold">ALGO TERMINAL</p>
             </div>
-          </div>
 
-          {/* Desktop Tabs */}
+             {/* Desktop Tabs */}
           <div className="hidden md:flex space-x-2 ml-10">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-3 py-2 rounded-md text-sm transition
+                className={`px-3 py-2 rounded-md text-[13px] font-semibold transition
                 ${activeTab === tab.id
                   ? 'bg-violet-100 text-violet-500'
                   : 'text-gray-600 hover:bg-violet-100 hover:text-violet-500'
@@ -60,6 +59,9 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
               </button>
             ))}
           </div>
+          </div>
+
+         
 
           {/* Right Side */}
           <div className="flex items-center space-x-3">
