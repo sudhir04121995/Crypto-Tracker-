@@ -128,28 +128,7 @@ export default function Home() {
       <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-0 py-8">
-        {/* Dashboard Tab */}
-        {activeTab === 'dashboard' && (
-          <div>
-            <div className="mb-8">
-              <h1 className="text-2xl font-bold mb-2">ADVANCED SIGNAL</h1>
-              <p className="text-gray-400">Select an exchange to scan for live signals</p>
-            </div>
-            
-            <StatsCards totalSignals={43} longBuy={19} shortSell={24} avgConfluence={81} />
-            {getExchangeButtons()}
-            
-            <div className="card">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">TOP SIGNALS</h2>
-                <div className="flex gap-2">
-                  <button className="px-3 py-1 rounded bg-crypto-border text-sm">+14.37% (24H)</button>
-                </div>
-              </div>
-              <SignalCard signals={mockSignals} />
-            </div>
-          </div>
-        )}
+      
 
         {/* Binance Spot Tab */}
         {activeTab === 'futures' && (

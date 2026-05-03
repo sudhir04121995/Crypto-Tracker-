@@ -21,7 +21,6 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
   }, [darkMode]);
 
   const tabs = [
-    { id: 'dashboard', name: 'DASHBOARD' },
     { id: 'futures', name: 'BINANCE FUTURES' },
     { id: 'spot', name: 'BINANCE SPOT' },
     { id: 'signals', name: 'MULTI-EXCHANGE' },
