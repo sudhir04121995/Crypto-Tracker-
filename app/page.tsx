@@ -170,17 +170,13 @@ export default function Home() {
           </div>
         )}
 
-        {activeTab === 'spot' && (
-          <TradingSignals/>
-        )}
+        {activeTab === 'spot' &&  <TradingSignals/>}
 
-            {activeTab === 'backtester' && (
-          <AdvancedSignals/>
-        )}
+            {/* Live Signals Tab */}
+        {activeTab === 'signals' && <AdvancedSignals/>}
 
 
-        {/* Live Signals Tab */}
-        {activeTab === 'signals' && (
+      {activeTab === 'backtester' && (
           <div>
             <div className="mb-6">
               <h2 className="text-2xl font-bold mb-2">LIVE SIGNALS</h2>
