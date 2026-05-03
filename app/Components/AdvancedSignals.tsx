@@ -253,25 +253,16 @@ export default function AdvancedSignals() {
 // };
 
 
-
 const fetchMarketData = async () => {
   try {
-    // Use CoinGecko API - no CORS issues
-    const response = await axios.get(
-      'https://api.coingecko.com/api/v3/coins/markets',
-      {
-        params: {
-          vs_currency: 'usd',
-          order: 'market_cap_desc',
-          per_page: 50,
-          page: 1,
-          sparkline: false,
-          price_change_percentage: '1h,24h'
-        }
-      }
-    );
-    
+    // Call your Next.js API route instead of external API
+    const response = await axios.get('/api/crypto');
     const data = response.data;
+    
+    // Check if API returned error
+    if (data.error) {
+      throw new Error(data.error);
+    }
     
     const transformedData: CoinData[] = data.map((item: any) => ({
       id: item.id,
@@ -293,22 +284,22 @@ const fetchMarketData = async () => {
     setLoading(false);
     setRefreshing(false);
   } catch (error) {
-    console.error('Error fetching from CoinGecko:', error);
+    console.error('Error fetching from API:', error);
     setLoading(false);
     setRefreshing(false);
-    // Load mock data if API fails
+    // Fallback to mock data if API fails
     loadMockData();
   }
 };
 
-// Add this function RIGHT AFTER fetchMarketData
+// Optional: Keep mock data as last resort fallback
 const loadMockData = () => {
   const mockData: CoinData[] = [
     {
       id: 'bitcoin',
       symbol: 'btc',
       name: 'Bitcoin',
-      image: 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png',
+      image: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/btc.png',
       current_price: 63452,
       price_change_percentage_24h: 2.5,
       price_change_percentage_1h_in_currency: 0.5,
@@ -321,7 +312,7 @@ const loadMockData = () => {
       id: 'ethereum',
       symbol: 'eth',
       name: 'Ethereum',
-      image: 'https://assets.coingecko.com/coins/images/279/large/ethereum.png',
+      image: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/eth.png',
       current_price: 3450,
       price_change_percentage_24h: 1.8,
       price_change_percentage_1h_in_currency: 0.3,
@@ -331,23 +322,10 @@ const loadMockData = () => {
       low_24h: 3400,
     },
     {
-      id: 'binancecoin',
-      symbol: 'bnb',
-      name: 'BNB',
-      image: 'https://assets.coingecko.com/coins/images/825/large/bnb-icon2.png',
-      current_price: 580,
-      price_change_percentage_24h: -0.5,
-      price_change_percentage_1h_in_currency: -0.1,
-      market_cap: 89000000000,
-      total_volume: 2000000000,
-      high_24h: 590,
-      low_24h: 575,
-    },
-    {
       id: 'solana',
       symbol: 'sol',
       name: 'Solana',
-      image: 'https://assets.coingecko.com/coins/images/4128/large/solana.png',
+      image: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/sol.png',
       current_price: 145,
       price_change_percentage_24h: 5.2,
       price_change_percentage_1h_in_currency: 1.2,
@@ -357,23 +335,10 @@ const loadMockData = () => {
       low_24h: 138,
     },
     {
-      id: 'ripple',
-      symbol: 'xrp',
-      name: 'XRP',
-      image: 'https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png',
-      current_price: 0.62,
-      price_change_percentage_24h: -1.2,
-      price_change_percentage_1h_in_currency: -0.3,
-      market_cap: 34000000000,
-      total_volume: 1500000000,
-      high_24h: 0.64,
-      low_24h: 0.61,
-    },
-    {
       id: 'cardano',
       symbol: 'ada',
       name: 'Cardano',
-      image: 'https://assets.coingecko.com/coins/images/975/large/cardano.png',
+      image: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/ada.png',
       current_price: 0.45,
       price_change_percentage_24h: 3.1,
       price_change_percentage_1h_in_currency: 0.8,
@@ -386,7 +351,7 @@ const loadMockData = () => {
       id: 'dogecoin',
       symbol: 'doge',
       name: 'Dogecoin',
-      image: 'https://assets.coingecko.com/coins/images/5/large/dogecoin.png',
+      image: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/doge.png',
       current_price: 0.12,
       price_change_percentage_24h: -2.3,
       price_change_percentage_1h_in_currency: -0.5,
@@ -573,8 +538,7 @@ const loadMockData = () => {
           
           {/* Live Indicator & Refresh */}
           <div className="flex items-center gap-3">
-            {/* <div className="flex items-center gap-2 px-3 py-2 bg-[#4d4e4f] rounded-lg"> */}
-            <div className="flex items-center gap-2 px-3 py-2 bg-[#131824] rounded-lg">
+            <div className="flex items-center gap-2 px-3 py-2 bg-[#4d4e4f] rounded-lg">
               <div className="relative">
                 <div className={`w-2.5 h-2.5 rounded-full ${isLive ? 'bg-green-500' : 'bg-gray-400'}`}></div>
                 {isLive && (
